@@ -132,46 +132,103 @@ class _TaskListScreenState extends State<TaskListScreen> {
           // We get the specific task object for this position (index)
           final task = tasks[index];
 
-          // UI CONCEPT: ListTile
-          // A pre-built widget perfect for lists with a title, subtitle, and icons.
-          return ListTile(
-            leading: Checkbox(
-              value: task.isCompleted,
-              onChanged: (bool? newValue) {
-                // OOP & FLUTTER CONCEPT: setState
-                // This function tells Flutter: "Something changed in the data,
-                // please redraw the screen so the user can see it!"
-                setState(() {
-                  task.isCompleted = newValue ?? false;
-                });
-              },
+          // ---
+          // USER STORY #3: TASK DELETION (SWIPE TO DELETE)
+          // ---
+          // FLUTTER CONCEPT: Dismissible
+          // A widget that can be dismissed by dragging in the indicated direction.
+          return Dismissible(
+            // FLUTTER CONCEPT: Keys
+            // When widgets move around or get deleted, Flutter needs a unique ID
+            // to know exactly WHICH widget is being interacted with.
+            key: ValueKey(task.id),
+
+            // UI CONCEPT: Swipe Direction
+            // We restrict the swipe to only work from right to left (endToStart).
+            direction: DismissDirection.endToStart,
+
+            // UI CONCEPT: Background
+            // This is what shows UP BEHIND the list item when you start swiping.
+            background: Container(
+              color: Colors.red,
+              alignment: Alignment.centerRight,
+              padding: const EdgeInsets.only(right: 20.0),
+              child: const Icon(Icons.delete, color: Colors.white),
             ),
-            title: Text(
-              task.title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                // USER STORY #2: Visual indicator for completion
-                decoration: task.isCompleted
-                    ? TextDecoration.lineThrough
-                    : TextDecoration.none,
-                color: task.isCompleted ? Colors.grey : Colors.black87,
+
+            // EVENT: onDismissed
+            // This code runs AFTER the user finishes the swipe gesture.
+            onDismissed: (direction) {
+              // 1. TEMPORARY MEMORY: We save the task and its position before deleting it.
+              // This is crucial for the "Undo" functionality.
+              final deletedTask = task;
+              final deletedIndex = index;
+
+              // 2. STATE UPDATE: Remove the item from our list so the UI updates.
+              setState(() {
+                tasks.removeAt(index);
+              });
+
+              // 3. USER EXPERIENCE (UX): ScaffoldMessenger & SnackBar
+              // We show a temporary pop-up message at the bottom of the screen.
+              ScaffoldMessenger.of(
+                context,
+              ).clearSnackBars(); // Clears any existing snackbars
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Task "${deletedTask.title}" deleted.'),
+                  duration: const Duration(seconds: 4), // Grace period
+                  // USER STORY #3: ACCEPTANCE CRITERIA 3 & 4 (UNDO ACTION)
+                  action: SnackBarAction(
+                    label: 'Undo',
+                    onPressed: () {
+                      // If the user clicks "Undo", we put the task back exactly
+                      // where it was before using insert().
+                      setState(() {
+                        tasks.insert(deletedIndex, deletedTask);
+                      });
+                    },
+                  ),
+                ),
+              );
+            },
+
+            // UI CONCEPT: ListTile
+            // A pre-built widget perfect for lists with a title, subtitle, and icons.
+            // Now wrapped securely inside the Dismissible.
+            child: ListTile(
+              leading: Checkbox(
+                value: task.isCompleted,
+                onChanged: (bool? newValue) {
+                  // OOP & FLUTTER CONCEPT: setState
+                  // This function tells Flutter: "Something changed in the data,
+                  // please redraw the screen so the user can see it!"
+                  setState(() {
+                    task.isCompleted = newValue ?? false;
+                  });
+                },
               ),
-            ),
-            subtitle: Text(task.description),
-            trailing: const Icon(
-              Icons.swipe_left,
-              color: Colors.grey,
-              size: 16,
+              title: Text(
+                task.title,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  // USER STORY #2: Visual indicator for completion
+                  decoration: task.isCompleted
+                      ? TextDecoration.lineThrough
+                      : TextDecoration.none,
+                  color: task.isCompleted ? Colors.grey : Colors.black87,
+                ),
+              ),
+              subtitle: Text(task.description),
+              // We can remove the static swipe icon now, as the actual gesture works!
+              // trailing: const Icon(Icons.swipe_left, color: Colors.grey, size: 16),
             ),
           );
         },
       ),
       // USER STORY #1: ACCEPTANCE CRITERIA 1 - Triggering the modal
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Now we call our new function!
-          _showAddTaskModal(context);
-        },
+        onPressed: () => _showAddTaskModal(context),
         backgroundColor: Colors.blueAccent,
         child: const Icon(Icons.add, color: Colors.white),
       ),
