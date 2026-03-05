@@ -58,7 +58,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
   }
 
   // ---
-  // MODAL BOTTOM SHEET (FIXED KEYBOARD ISSUE)
+  // MODAL BOTTOM SHEET (ANDROID KEYBOARD FIX)
   // ---
   void _showTaskModal(BuildContext context, [Task? existingTask]) {
     if (existingTask != null) {
@@ -71,89 +71,98 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      isScrollControlled:
+          true, // 1. Allows the modal to take up full screen height if needed
       builder: (BuildContext ctx) {
-        // FLUTTER BUG FIX: SingleChildScrollView
-        // This is required on Android to allow the bottom sheet to be pushed UP
-        // by the keyboard without overflowing or being hidden.
-        return SingleChildScrollView(
-          child: Padding(
-            // We keep the padding to give space exactly where the keyboard appears
-            padding: EdgeInsets.only(
-              bottom: MediaQuery.of(context).viewInsets.bottom,
-              left: 16,
-              right: 16,
-              top: 16,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  existingTask != null ? 'Edit Task' : 'Add New Task',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                TextField(
-                  controller: _titleController,
-                  decoration: const InputDecoration(labelText: 'Task Title'),
-                  autofocus: true,
-                ),
-                TextField(
-                  controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description (Optional)',
-                  ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: () {
-                      if (_titleController.text.trim().isEmpty) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text('Task title cannot be empty!'),
-                          ),
-                        );
-                        return;
-                      }
+        // 2. NOTICE 'ctx' HERE! This is the modal's specific context.
 
-                      setState(() {
-                        if (existingTask != null) {
-                          existingTask.title = _titleController.text.trim();
-                          existingTask.description = _descriptionController.text
-                              .trim();
-                        } else {
-                          final newTask = Task(
-                            id: DateTime.now().millisecondsSinceEpoch
-                                .toString(),
-                            title: _titleController.text.trim(),
-                            description: _descriptionController.text.trim(),
-                            createdAt: DateTime.now(),
-                            appUserId: 'user_001',
-                            categoryId: 'cat_1',
+        // FLUTTER BUG FIX: Context Scope & Widget Hierarchy
+        // To fix the Android keyboard overlap, the structure MUST be:
+        // Padding (Keyboard) -> SingleChildScrollView -> Padding (Visual) -> Column
+        return Padding(
+          // 3. We use 'ctx' instead of 'context' to listen to the keyboard correctly
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(ctx).viewInsets.bottom,
+          ),
+          child: SingleChildScrollView(
+            child: Padding(
+              // 4. This is just the visual spacing for the UI elements
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    existingTask != null ? 'Edit Task' : 'Add New Task',
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  TextField(
+                    controller: _titleController,
+                    decoration: const InputDecoration(labelText: 'Task Title'),
+                    autofocus: true,
+                  ),
+                  TextField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(
+                      labelText: 'Description (Optional)',
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blueAccent,
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        if (_titleController.text.trim().isEmpty) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            // Here 'context' is fine for the SnackBar
+                            const SnackBar(
+                              content: Text('Task title cannot be empty!'),
+                            ),
                           );
-                          tasks.insert(0, newTask);
+                          return;
                         }
-                      });
 
-                      _saveTasksToDevice();
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      existingTask != null ? 'Update Task' : 'Save Task',
+                        setState(() {
+                          if (existingTask != null) {
+                            existingTask.title = _titleController.text.trim();
+                            existingTask.description = _descriptionController
+                                .text
+                                .trim();
+                          } else {
+                            final newTask = Task(
+                              id: DateTime.now().millisecondsSinceEpoch
+                                  .toString(),
+                              title: _titleController.text.trim(),
+                              description: _descriptionController.text.trim(),
+                              createdAt: DateTime.now(),
+                              appUserId: 'user_001',
+                              categoryId: 'cat_1',
+                            );
+                            tasks.insert(0, newTask);
+                          }
+                        });
+
+                        _saveTasksToDevice();
+                        Navigator.pop(
+                          ctx,
+                        ); // Close the modal using its specific context
+                      },
+                      child: Text(
+                        existingTask != null ? 'Update Task' : 'Save Task',
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-              ],
+                  const SizedBox(height: 16),
+                ],
+              ),
             ),
           ),
         );
