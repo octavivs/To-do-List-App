@@ -42,6 +42,10 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
+  # This package allows us to generate app launcher icons for both Android and iOS.
+  # We use the caret (^) to allow minor, non-breaking updates automatically.
+  flutter_launcher_icons: ^0.14.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
