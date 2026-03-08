@@ -2,10 +2,7 @@
 // MAIN ENTRY POINT
 // ---
 import 'package:flutter/material.dart';
-
-// IMPORTANT: Import the screen we just built!
-// Make sure the path matches your folder structure.
-import 'screens/task_list_screen.dart';
+import 'package:to_do_list_app/presentation/screens/task_list_screen.dart';
 
 // FLUTTER CONCEPT: The main() function
 // This is the very first function that Dart runs when the app starts.
@@ -27,7 +24,7 @@ class TodoApp extends StatelessWidget {
     // Material Design applications. It handles routing and themes globally.
     return MaterialApp(
       // The title of the app (used by the device's task switcher)
-      title: 'My To-Do App',
+      title: 'TaskFlow',
 
       // UI DETAIL: Hides the little "DEBUG" banner in the top right corner
       debugShowCheckedModeBanner: false,
