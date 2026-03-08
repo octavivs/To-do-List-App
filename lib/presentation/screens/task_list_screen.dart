@@ -1,8 +1,7 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
 import 'package:to_do_list_app/models/task.dart';
-// import 'package:to_do_list_app/data/mock_data.dart'; // Only needed if you want to load mock data initially
+import 'package:to_do_list_app/logic/providers/task_provider.dart';
 
 class TaskListScreen extends StatefulWidget {
   const TaskListScreen({super.key});
@@ -12,52 +11,13 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
-  // We start with an empty list. It will be populated from the device's storage.
-  List<Task> tasks = [];
-
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
 
-  // ---
-  // LIFECYCLE: initState
-  // ---
-  @override
-  void initState() {
-    super.initState();
-    _loadTasksFromDevice();
-  }
+  // Notice: No more initState, no more local List<Task>, no more Repository!
 
   // ---
-  // DATA PERSISTENCE: LOAD (READ)
-  // ---
-  Future<void> _loadTasksFromDevice() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? tasksJsonString = prefs.getString('cbtis47_tasks_key');
-
-    if (tasksJsonString != null) {
-      List<dynamic> decodedJsonList = jsonDecode(tasksJsonString);
-      setState(() {
-        tasks = decodedJsonList
-            .map((jsonItem) => Task.fromJson(jsonItem))
-            .toList();
-      });
-    }
-  }
-
-  // ---
-  // DATA PERSISTENCE: SAVE (WRITE)
-  // ---
-  Future<void> _saveTasksToDevice() async {
-    final prefs = await SharedPreferences.getInstance();
-    List<Map<String, dynamic>> jsonList = tasks
-        .map((task) => task.toJson())
-        .toList();
-    String tasksString = jsonEncode(jsonList);
-    await prefs.setString('cbtis47_tasks_key', tasksString);
-  }
-
-  // ---
-  // MODAL BOTTOM SHEET (ANDROID KEYBOARD FIX)
+  // MODAL BOTTOM SHEET
   // ---
   void _showTaskModal(BuildContext context, [Task? existingTask]) {
     if (existingTask != null) {
@@ -70,22 +30,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
     showModalBottomSheet(
       context: context,
-      isScrollControlled:
-          true, // 1. Allows the modal to take up full screen height if needed
+      isScrollControlled: true,
       builder: (BuildContext ctx) {
-        // 2. NOTICE 'ctx' HERE! This is the modal's specific context.
-
-        // FLUTTER BUG FIX: Context Scope & Widget Hierarchy
-        // To fix the Android keyboard overlap, the structure MUST be:
-        // Padding (Keyboard) -> SingleChildScrollView -> Padding (Visual) -> Column
         return Padding(
-          // 3. We use 'ctx' instead of 'context' to listen to the keyboard correctly
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(ctx).viewInsets.bottom,
           ),
           child: SingleChildScrollView(
             child: Padding(
-              // 4. This is just the visual spacing for the UI elements
               padding: const EdgeInsets.all(16.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -110,7 +62,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     ),
                   ),
                   const SizedBox(height: 16),
-
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
@@ -121,7 +72,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       onPressed: () {
                         if (_titleController.text.trim().isEmpty) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            // Here 'context' is fine for the SnackBar
                             const SnackBar(
                               content: Text('Task title cannot be empty!'),
                             ),
@@ -129,30 +79,30 @@ class _TaskListScreenState extends State<TaskListScreen> {
                           return;
                         }
 
-                        setState(() {
-                          if (existingTask != null) {
-                            existingTask.title = _titleController.text.trim();
-                            existingTask.description = _descriptionController
-                                .text
-                                .trim();
-                          } else {
-                            final newTask = Task(
-                              id: DateTime.now().millisecondsSinceEpoch
-                                  .toString(),
-                              title: _titleController.text.trim(),
-                              description: _descriptionController.text.trim(),
-                              createdAt: DateTime.now(),
-                              appUserId: 'user_001',
-                              categoryId: 'cat_1',
-                            );
-                            tasks.insert(0, newTask);
-                          }
-                        });
+                        // FLUTTER CONCEPT: context.read()
+                        // We use .read() here instead of .watch() because we are inside a callback (onPressed).
+                        // We just want to trigger an action, not listen for UI changes.
+                        final provider = context.read<TaskProvider>();
 
-                        _saveTasksToDevice();
-                        Navigator.pop(
-                          ctx,
-                        ); // Close the modal using its specific context
+                        if (existingTask != null) {
+                          existingTask.title = _titleController.text.trim();
+                          existingTask.description = _descriptionController.text
+                              .trim();
+                          provider.updateTask(existingTask);
+                        } else {
+                          final newTask = Task(
+                            id: DateTime.now().millisecondsSinceEpoch
+                                .toString(),
+                            title: _titleController.text.trim(),
+                            description: _descriptionController.text.trim(),
+                            createdAt: DateTime.now(),
+                            appUserId: 'user_001',
+                            categoryId: 'cat_1',
+                          );
+                          provider.addTask(newTask);
+                        }
+
+                        Navigator.pop(ctx);
                       },
                       child: Text(
                         existingTask != null ? 'Update Task' : 'Save Task',
@@ -170,11 +120,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
   }
 
   // ---
-  // REUSABLE UI COMPONENT (DRY PRINCIPLE)
+  // REUSABLE UI COMPONENT
   // ---
-  // OOP CONCEPT: Method Extraction
-  // Instead of writing the ListView code three times for our three tabs,
-  // we create a function that takes a specific list of tasks and builds the UI.
   Widget _buildTaskList(List<Task> filteredTasks) {
     if (filteredTasks.isEmpty) {
       return const Center(
@@ -200,31 +147,20 @@ class _TaskListScreenState extends State<TaskListScreen> {
             child: const Icon(Icons.delete, color: Colors.white),
           ),
           onDismissed: (direction) {
-            final deletedTask = task;
-
-            // To undo safely across filtered lists, we find the original index
-            final originalIndex = tasks.indexWhere(
-              (t) => t.id == deletedTask.id,
-            );
-
-            setState(() {
-              tasks.removeWhere((t) => t.id == deletedTask.id);
-            });
-
-            _saveTasksToDevice();
+            // Use Provider to delete and get the original index
+            final provider = context.read<TaskProvider>();
+            final originalIndex = provider.deleteTask(task);
 
             ScaffoldMessenger.of(context).clearSnackBars();
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('Task "${deletedTask.title}" deleted.'),
+                content: Text('Task "${task.title}" deleted.'),
                 duration: const Duration(seconds: 4),
                 action: SnackBarAction(
                   label: 'Undo',
                   onPressed: () {
-                    setState(() {
-                      tasks.insert(originalIndex, deletedTask);
-                    });
-                    _saveTasksToDevice();
+                    // Use Provider to undo the deletion
+                    provider.undoDelete(originalIndex, task);
                   },
                 ),
               ),
@@ -234,11 +170,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
             onLongPress: () => _showTaskModal(context, task),
             leading: Checkbox(
               value: task.isCompleted,
-              onChanged: (bool? newValue) {
-                setState(() {
-                  task.isCompleted = newValue ?? false;
-                });
-                _saveTasksToDevice();
+              onChanged: (_) {
+                // Provider handles the toggle and persistence automatically
+                context.read<TaskProvider>().toggleTaskCompletion(task);
               },
             ),
             title: Text(
@@ -260,22 +194,20 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
   }
 
-  // ---
-  // MAIN UI BUILDER WITH TABS
-  // ---
   @override
   Widget build(BuildContext context) {
-    // FLUTTER CONCEPT: DefaultTabController
-    // Wraps our Scaffold and automatically syncs the TabBar with the TabBarView.
+    // FLUTTER CONCEPT: context.watch()
+    // This makes the entire build method reactive. Whenever notifyListeners()
+    // is called inside TaskProvider, this screen will rebuild with fresh data.
+    final taskProvider = context.watch<TaskProvider>();
+
     return DefaultTabController(
-      length: 3, // We will have 3 tabs: All, Pending, Completed
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('My To-Do List'),
+          title: const Text('TaskFlow'),
           backgroundColor: Colors.blueAccent,
           foregroundColor: Colors.white,
-          // FLUTTER CONCEPT: TabBar
-          // The visual buttons at the bottom of the AppBar
           bottom: const TabBar(
             labelColor: Colors.white,
             unselectedLabelColor: Colors.white70,
@@ -287,24 +219,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
             ],
           ),
         ),
-
-        // FLUTTER CONCEPT: TabBarView
-        // The content that changes when you swipe or tap a tab.
-        // The order of children MUST match the order of the tabs above.
         body: TabBarView(
           children: [
-            // TAB 1: ALL TASKS
-            _buildTaskList(tasks),
-
-            // TAB 2: PENDING TASKS ONLY
-            // We use .where() to filter the list dynamically
-            _buildTaskList(tasks.where((task) => !task.isCompleted).toList()),
-
-            // TAB 3: COMPLETED TASKS ONLY
-            _buildTaskList(tasks.where((task) => task.isCompleted).toList()),
+            // We directly pass the filtered getters from the provider
+            _buildTaskList(taskProvider.allTasks),
+            _buildTaskList(taskProvider.pendingTasks),
+            _buildTaskList(taskProvider.completedTasks),
           ],
         ),
-
         floatingActionButton: FloatingActionButton(
           onPressed: () => _showTaskModal(context),
           backgroundColor: Colors.blueAccent,
