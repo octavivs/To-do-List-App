@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_list_app/logic/providers/task_provider.dart';
 import 'package:to_do_list_app/presentation/screens/task_list_screen.dart';
+import 'package:to_do_list_app/core/constants/app_colors.dart';
 
 void main() {
   // FLUTTER CONCEPT: App Initialization with Provider
@@ -26,8 +27,24 @@ class TodoApp extends StatelessWidget {
     return MaterialApp(
       title: 'TaskFlow',
       debugShowCheckedModeBanner: false,
+
+      // ---
+      // GLOBAL THEME CONFIGURATION
+      // ---
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blueAccent),
+        // Generates a cohesive palette based on our primary color
+        colorScheme: ColorScheme.fromSeed(seedColor: AppColors.primary),
+        // Sets the default background color for all screens
+        scaffoldBackgroundColor: AppColors.background,
+
+        // Globally configures all AppBars in the application
+        appBarTheme: const AppBarTheme(
+          backgroundColor: AppColors.primary,
+          foregroundColor: AppColors.textLight,
+          centerTitle: true,
+          elevation: 0,
+        ),
+
         useMaterial3: true,
       ),
       home: const TaskListScreen(),
