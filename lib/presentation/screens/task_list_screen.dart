@@ -8,6 +8,7 @@ import 'package:to_do_list_app/logic/providers/task_provider.dart';
 import 'package:to_do_list_app/presentation/widgets/task_list_item.dart';
 import 'package:to_do_list_app/presentation/widgets/task_bottom_sheet.dart';
 import 'package:to_do_list_app/core/constants/app_colors.dart';
+import 'package:to_do_list_app/presentation/widgets/category_filter_chips.dart';
 
 class TaskListScreen extends StatelessWidget {
   const TaskListScreen({super.key});
@@ -58,9 +59,6 @@ class TaskListScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('TaskFlow'),
-
-          // NOTE: backgroundColor and foregroundColor were removed here
-          // because they are now controlled globally in main.dart!
           bottom: const TabBar(
             labelColor: AppColors.textLight,
             unselectedLabelColor: Colors.white70,
@@ -72,16 +70,31 @@ class TaskListScreen extends StatelessWidget {
             ],
           ),
         ),
-        body: TabBarView(
+
+        // ---
+        // UPDATED BODY: Column with Chips and TabBarView
+        // ---
+        body: Column(
           children: [
-            _buildTaskList(taskProvider.allTasks),
-            _buildTaskList(taskProvider.pendingTasks),
-            _buildTaskList(taskProvider.completedTasks),
+            // Our new horizontally scrollable filter chips
+            const CategoryFilterChips(),
+
+            // Expanded forces the TabBarView to take up all the remaining screen space
+            Expanded(
+              child: TabBarView(
+                children: [
+                  _buildTaskList(taskProvider.allTasks),
+                  _buildTaskList(taskProvider.pendingTasks),
+                  _buildTaskList(taskProvider.completedTasks),
+                ],
+              ),
+            ),
           ],
         ),
+
         floatingActionButton: FloatingActionButton(
           onPressed: () => _openTaskModal(context),
-          backgroundColor: AppColors.primary, // <-- Using the constant
+          backgroundColor: AppColors.primary,
           child: const Icon(Icons.add, color: AppColors.textLight),
         ),
       ),
