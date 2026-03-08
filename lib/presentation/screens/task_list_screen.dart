@@ -7,6 +7,7 @@ import 'package:to_do_list_app/models/task.dart';
 import 'package:to_do_list_app/logic/providers/task_provider.dart';
 import 'package:to_do_list_app/presentation/widgets/task_list_item.dart';
 import 'package:to_do_list_app/presentation/widgets/task_bottom_sheet.dart';
+import 'package:to_do_list_app/core/constants/app_colors.dart';
 
 class TaskListScreen extends StatelessWidget {
   const TaskListScreen({super.key});
@@ -50,7 +51,6 @@ class TaskListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Watch the state from the provider
     final taskProvider = context.watch<TaskProvider>();
 
     return DefaultTabController(
@@ -58,12 +58,13 @@ class TaskListScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('TaskFlow'),
-          backgroundColor: Colors.blueAccent,
-          foregroundColor: Colors.white,
+
+          // NOTE: backgroundColor and foregroundColor were removed here
+          // because they are now controlled globally in main.dart!
           bottom: const TabBar(
-            labelColor: Colors.white,
+            labelColor: AppColors.textLight,
             unselectedLabelColor: Colors.white70,
-            indicatorColor: Colors.white,
+            indicatorColor: AppColors.textLight,
             tabs: [
               Tab(text: 'All'),
               Tab(text: 'Pending'),
@@ -80,8 +81,8 @@ class TaskListScreen extends StatelessWidget {
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () => _openTaskModal(context),
-          backgroundColor: Colors.blueAccent,
-          child: const Icon(Icons.add, color: Colors.white),
+          backgroundColor: AppColors.primary, // <-- Using the constant
+          child: const Icon(Icons.add, color: AppColors.textLight),
         ),
       ),
     );
