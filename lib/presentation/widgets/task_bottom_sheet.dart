@@ -3,7 +3,7 @@
 // ---
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_list_app/models/task.dart';
+import 'package:to_do_list_app/data/models/task.dart';
 import 'package:to_do_list_app/logic/providers/task_provider.dart';
 import 'package:to_do_list_app/core/constants/app_colors.dart';
 

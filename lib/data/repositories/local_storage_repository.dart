@@ -3,7 +3,7 @@
 // ---
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:to_do_list_app/models/task.dart';
+import 'package:to_do_list_app/data/models/task.dart';
 
 // OOP CONCEPT: SINGLE RESPONSIBILITY PRINCIPLE (SRP)
 // This class has exactly one job: managing data persistence.
