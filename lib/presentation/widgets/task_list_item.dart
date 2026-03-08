@@ -6,7 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:to_do_list_app/models/task.dart';
 import 'package:to_do_list_app/logic/providers/task_provider.dart';
 import 'package:to_do_list_app/core/utils/color_utils.dart';
-import 'package:to_do_list_app/core/constants/app_colors.dart'; // <-- Using our new colors
+import 'package:to_do_list_app/core/constants/app_colors.dart';
+import 'package:to_do_list_app/core/utils/formatters.dart'; // <-- 1. Import our new formatter
 
 class TaskListItem extends StatelessWidget {
   final Task task;
@@ -16,7 +17,6 @@ class TaskListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Retrieve the full Category object based on the task's categoryId (Foreign Key)
     final provider = context.read<TaskProvider>();
     final taskCategory = provider.getCategoryById(task.categoryId);
 
@@ -24,7 +24,7 @@ class TaskListItem extends StatelessWidget {
       key: ValueKey(task.id),
       direction: DismissDirection.endToStart,
       background: Container(
-        color: AppColors.error, // Semantic color for deletion
+        color: AppColors.error,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20.0),
         child: const Icon(Icons.delete, color: AppColors.surface),
@@ -45,18 +45,13 @@ class TaskListItem extends StatelessWidget {
       },
       child: ListTile(
         onLongPress: onEdit,
-
-        // ---
-        // THE MISSING CHECKBOX IS BACK!
-        // ---
         leading: Checkbox(
           value: task.isCompleted,
-          activeColor: AppColors.primary, // Matches our app theme!
+          activeColor: AppColors.primary,
           onChanged: (bool? newValue) {
             provider.toggleTaskCompletion(task);
           },
         ),
-
         title: Text(
           task.title,
           style: TextStyle(
@@ -64,21 +59,48 @@ class TaskListItem extends StatelessWidget {
             decoration: task.isCompleted
                 ? TextDecoration.lineThrough
                 : TextDecoration.none,
-            // Semantic text colors based on completion status
             color: task.isCompleted
                 ? AppColors.textSecondary
                 : AppColors.textPrimary,
           ),
         ),
 
-        subtitle: task.description.isNotEmpty
-            ? Text(
+        // ---
+        // UPDATED SUBTITLE: Column with Description and Date
+        // ---
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // If the description is not empty, we show it and add a tiny space
+            if (task.description.isNotEmpty) ...[
+              Text(
                 task.description,
                 style: const TextStyle(color: AppColors.textSecondary),
-              )
-            : null,
+              ),
+              const SizedBox(height: 4), // Vertical spacing
+            ],
 
-        // VISUAL CATEGORY INDICATOR
+            // We ALWAYS show the formatted creation date at the bottom
+            Row(
+              children: [
+                const Icon(
+                  Icons.calendar_today,
+                  size: 12,
+                  color: AppColors.textSecondary,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  Formatters.formatDate(task.createdAt),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+
         trailing: Container(
           width: 16,
           height: 16,
