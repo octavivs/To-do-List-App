@@ -6,7 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:to_do_list_app/models/task.dart';
 import 'package:to_do_list_app/logic/providers/task_provider.dart';
 import 'package:to_do_list_app/core/utils/color_utils.dart';
-import 'package:to_do_list_app/core/constants/app_colors.dart';
+import 'package:to_do_list_app/core/constants/app_colors.dart'; // <-- Using our new colors
 
 class TaskListItem extends StatelessWidget {
   final Task task;
@@ -24,14 +24,39 @@ class TaskListItem extends StatelessWidget {
       key: ValueKey(task.id),
       direction: DismissDirection.endToStart,
       background: Container(
-        color: AppColors.error, // <-- Replaced Colors.red with AppColors.error
+        color: AppColors.error, // Semantic color for deletion
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 20.0),
         child: const Icon(Icons.delete, color: AppColors.surface),
       ),
-      // ...
+      onDismissed: (direction) {
+        final originalIndex = provider.deleteTask(task);
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Task "${task.title}" deleted.'),
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: 'Undo',
+              onPressed: () => provider.undoDelete(originalIndex, task),
+            ),
+          ),
+        );
+      },
       child: ListTile(
-        // ...
+        onLongPress: onEdit,
+
+        // ---
+        // THE MISSING CHECKBOX IS BACK!
+        // ---
+        leading: Checkbox(
+          value: task.isCompleted,
+          activeColor: AppColors.primary, // Matches our app theme!
+          onChanged: (bool? newValue) {
+            provider.toggleTaskCompletion(task);
+          },
+        ),
+
         title: Text(
           task.title,
           style: TextStyle(
@@ -39,31 +64,27 @@ class TaskListItem extends StatelessWidget {
             decoration: task.isCompleted
                 ? TextDecoration.lineThrough
                 : TextDecoration.none,
-            // Use semantic text colors
+            // Semantic text colors based on completion status
             color: task.isCompleted
                 ? AppColors.textSecondary
                 : AppColors.textPrimary,
           ),
         ),
+
         subtitle: task.description.isNotEmpty
             ? Text(
                 task.description,
-                style: const TextStyle(
-                  color: AppColors.textSecondary,
-                ), // Subtitle color
+                style: const TextStyle(color: AppColors.textSecondary),
               )
             : null,
-        // ---
+
         // VISUAL CATEGORY INDICATOR
-        // ---
-        // A small circular dot at the end of the row displaying the category color
         trailing: Container(
           width: 16,
           height: 16,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: ColorUtils.fromHex(taskCategory.colorHex),
-            // Added a subtle border just in case the color is very light
             border: Border.all(color: Colors.black26, width: 1),
           ),
         ),
