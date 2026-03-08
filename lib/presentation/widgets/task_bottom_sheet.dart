@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_list_app/models/task.dart';
 import 'package:to_do_list_app/logic/providers/task_provider.dart';
+import 'package:to_do_list_app/core/constants/app_colors.dart';
 
 class TaskBottomSheet extends StatefulWidget {
   final Task? existingTask;
@@ -148,8 +149,9 @@ class _TaskBottomSheetState extends State<TaskBottomSheet> {
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
+                    backgroundColor:
+                        AppColors.primary, // <-- Replaced hardcoded blue
+                    foregroundColor: AppColors.textLight,
                   ),
                   onPressed: _saveTask,
                   child: Text(
