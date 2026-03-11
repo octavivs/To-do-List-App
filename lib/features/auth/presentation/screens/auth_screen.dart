@@ -49,7 +49,14 @@ class _AuthScreenState extends State<AuthScreen> {
 
     if (email.isEmpty || password.isEmpty) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Please fill in all fields.')),
+        const SnackBar(
+          content: Text('Please fill in all fields.'),
+          backgroundColor: AppColors.error,
+          // ---
+          // UI FIX: FORCE FLOATING BEHAVIOR
+          // ---
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       return;
     }
@@ -80,6 +87,10 @@ class _AuthScreenState extends State<AuthScreen> {
           content: Text(errorMessage),
           backgroundColor: AppColors.error,
           duration: const Duration(seconds: 4),
+          // ---
+          // UI FIX: FORCE FLOATING BEHAVIOR
+          // ---
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
