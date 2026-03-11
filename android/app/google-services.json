@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "32669995964",
+    "firebase_url": "https://mffp-d3689.firebaseio.com",
+    "project_id": "mffp-d3689",
+    "storage_bucket": "mffp-d3689.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:32669995964:android:10f4c658012dd3833a91b9",
+        "android_client_info": {
+          "package_name": "com.example.to_do_list_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "32669995964-tiu49geahbgd0mn1akrqn4uuacom2krq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbT2m5rCRa1pv8j1qKWmUPkCJvAVyxJWU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "32669995964-tiu49geahbgd0mn1akrqn4uuacom2krq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
