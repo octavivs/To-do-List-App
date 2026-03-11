@@ -36,13 +36,19 @@ class _AuthScreenState extends State<AuthScreen> {
   // Method triggered when the user taps the primary action button.
   Future<void> _submit() async {
     final authProvider = context.read<AuthProvider>();
+
+    // FLUTTER CONCEPT: Context Caching
+    // We capture the ScaffoldMessenger BEFORE the async gap.
+    // This allows the SnackBar to float independently across screen transitions!
+    final messenger = ScaffoldMessenger.of(context);
+
     authProvider.clearError();
 
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      messenger.showSnackBar(
         const SnackBar(content: Text('Please fill in all fields.')),
       );
       return;
@@ -50,30 +56,26 @@ class _AuthScreenState extends State<AuthScreen> {
 
     bool success;
     if (_isLogin) {
-      // Attempt to Log In
       success = await authProvider.login(email, password);
     } else {
-      // Attempt to Sign Up
       success = await authProvider.register(email, password);
-
-      // FEATURE: Show success message on registration
-      if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Account created successfully!'),
-            backgroundColor: AppColors.success,
-          ),
-        );
-      }
     }
 
-    // FEATURE: Explicit error handling for unregistered users or wrong credentials
-    if (!success && mounted) {
-      // Firebase often returns generic error messages, we ensure a fallback text is always shown.
+    // Since we cached the messenger, we don't need 'if (mounted)' here.
+    // The message will trigger on the root MaterialApp, ensuring it's always visible.
+    if (success) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            _isLogin ? 'Welcome back!' : 'Account created successfully!',
+          ),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    } else {
       final errorMessage =
-          authProvider.errorMessage ?? 'Invalid credentials or user not found.';
-
-      ScaffoldMessenger.of(context).showSnackBar(
+          authProvider.errorMessage ?? 'Authentication failed.';
+      messenger.showSnackBar(
         SnackBar(
           content: Text(errorMessage),
           backgroundColor: AppColors.error,
