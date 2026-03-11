@@ -20,7 +20,7 @@ class AuthWrapper extends StatelessWidget {
     final authProvider = context.watch<AuthProvider>();
 
     // Scenario 1: Still checking the session state (App just opened)
-    if (authProvider.isLoading) {
+    if (authProvider.isCheckingSession) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
 
