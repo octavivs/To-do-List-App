@@ -3,9 +3,10 @@
 // ---
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_list_app/features/tasks/logic/providers/task_provider.dart';
-import 'package:to_do_list_app/features/tasks/presentation/screens/task_list_screen.dart';
 import 'package:to_do_list_app/core/constants/app_colors.dart';
+import 'package:to_do_list_app/features/tasks/logic/providers/task_provider.dart';
+import 'package:to_do_list_app/features/auth/logic/providers/auth_provider.dart';
+import 'package:to_do_list_app/features/auth/presentation/widgets/auth_wrapper.dart';
 
 // ---
 // NEW FIREBASE IMPORTS
@@ -29,9 +30,14 @@ void main() async {
   // depending on whether the app is running on Android or iOS.
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // We replace ChangeNotifierProvider with MultiProvider
+  // to manage both Auth and Tasks simultaneously.
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => TaskProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => AuthProvider()),
+        ChangeNotifierProvider(create: (context) => TaskProvider()),
+      ],
       child: const TodoApp(),
     ),
   );
@@ -56,7 +62,8 @@ class TodoApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      home: const TaskListScreen(),
+      // We change TaskListScreen() to our new router.
+      home: const AuthWrapper(),
     );
   }
 }
