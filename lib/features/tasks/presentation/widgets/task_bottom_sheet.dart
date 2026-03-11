@@ -1,10 +1,15 @@
 // ---
 // WIDGET: task_bottom_sheet.dart
+// PATH: lib/features/tasks/presentation/widgets/task_bottom_sheet.dart
 // ---
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:to_do_list_app/features/tasks/data/models/task.dart';
 import 'package:to_do_list_app/features/tasks/logic/providers/task_provider.dart';
+// ---
+// NEW IMPORT: We need the AuthProvider to get the current user's UID
+// ---
+import 'package:to_do_list_app/features/auth/logic/providers/auth_provider.dart';
 import 'package:to_do_list_app/core/constants/app_colors.dart';
 
 class TaskBottomSheet extends StatefulWidget {
@@ -20,7 +25,6 @@ class _TaskBottomSheetState extends State<TaskBottomSheet> {
   late final TextEditingController _titleController;
   late final TextEditingController _descriptionController;
 
-  // STATE VARIABLE: Holds the currently selected Foreign Key
   late String _selectedCategoryId;
 
   @override
@@ -33,7 +37,6 @@ class _TaskBottomSheetState extends State<TaskBottomSheet> {
       text: widget.existingTask?.description ?? '',
     );
 
-    // Initialize with the existing task's category, or default to the first one available
     final provider = context.read<TaskProvider>();
     _selectedCategoryId =
         widget.existingTask?.categoryId ?? provider.categories.first.id;
@@ -54,27 +57,49 @@ class _TaskBottomSheetState extends State<TaskBottomSheet> {
       return;
     }
 
-    final provider = context.read<TaskProvider>();
+    final taskProvider = context.read<TaskProvider>();
+
+    // ---
+    // GET REAL AUTHENTICATED USER
+    // ---
+    final authProvider = context.read<AuthProvider>();
+    final currentUser = authProvider.user;
+
+    // Safety check: This prevents the app from crashing or saving orphaned data
+    // if, for some very rare reason, the session was lost right before saving.
+    if (currentUser == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error: No active user session found.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
 
     if (widget.existingTask != null) {
       // UPDATE EXISTING TASK
       widget.existingTask!.title = _titleController.text.trim();
       widget.existingTask!.description = _descriptionController.text.trim();
-      // Assign the new selected category
       widget.existingTask!.categoryId = _selectedCategoryId;
-      provider.updateTask(widget.existingTask!);
+
+      taskProvider.updateTask(widget.existingTask!);
     } else {
       // CREATE NEW TASK
       final newTask = Task(
+        // We use milliseconds as a reliable unique string ID generator for now
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         title: _titleController.text.trim(),
         description: _descriptionController.text.trim(),
         createdAt: DateTime.now(),
-        appUserId: 'user_001',
-        // Dynamically assign the selected category ID!
+        // ---
+        // DYNAMIC USER ID INJECTION
+        // Replaced the hardcoded 'user_001' with the actual Firebase UID
+        // ---
+        appUserId: currentUser.uid,
         categoryId: _selectedCategoryId,
       );
-      provider.addTask(newTask);
+      taskProvider.addTask(newTask);
     }
 
     Navigator.pop(context);
@@ -82,7 +107,6 @@ class _TaskBottomSheetState extends State<TaskBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    // Read the available categories from the provider to build our dropdown
     final availableCategories = context.read<TaskProvider>().categories;
 
     return Padding(
@@ -115,10 +139,6 @@ class _TaskBottomSheetState extends State<TaskBottomSheet> {
                 ),
               ),
               const SizedBox(height: 16),
-
-              // ---
-              // CATEGORY DROPDOWN SELECTOR
-              // ---
               DropdownButtonFormField<String>(
                 initialValue: _selectedCategoryId,
                 decoration: const InputDecoration(
@@ -143,14 +163,12 @@ class _TaskBottomSheetState extends State<TaskBottomSheet> {
                   }
                 },
               ),
-
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        AppColors.primary, // <-- Replaced hardcoded blue
+                    backgroundColor: AppColors.primary,
                     foregroundColor: AppColors.textLight,
                   ),
                   onPressed: _saveTask,
