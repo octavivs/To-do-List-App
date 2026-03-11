@@ -3,7 +3,7 @@
 // ---
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:to_do_list_app/data/repositories/auth_repository.dart';
+import 'package:to_do_list_app/features/auth/data/repositories/auth_repository.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthRepository _authRepository = AuthRepository();

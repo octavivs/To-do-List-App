@@ -3,8 +3,8 @@
 // ---
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_list_app/logic/providers/task_provider.dart';
-import 'package:to_do_list_app/presentation/screens/task_list_screen.dart';
+import 'package:to_do_list_app/features/tasks/logic/providers/task_provider.dart';
+import 'package:to_do_list_app/features/tasks/presentation/screens/task_list_screen.dart';
 import 'package:to_do_list_app/core/constants/app_colors.dart';
 
 // ---

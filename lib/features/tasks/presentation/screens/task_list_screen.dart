@@ -3,12 +3,12 @@
 // ---
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_list_app/data/models/task.dart';
-import 'package:to_do_list_app/logic/providers/task_provider.dart';
-import 'package:to_do_list_app/presentation/widgets/task_list_item.dart';
-import 'package:to_do_list_app/presentation/widgets/task_bottom_sheet.dart';
 import 'package:to_do_list_app/core/constants/app_colors.dart';
-import 'package:to_do_list_app/presentation/widgets/category_filter_chips.dart';
+import 'package:to_do_list_app/features/tasks/data/models/task.dart';
+import 'package:to_do_list_app/features/tasks/logic/providers/task_provider.dart';
+import 'package:to_do_list_app/features/tasks/presentation/widgets/category_filter_chips.dart';
+import 'package:to_do_list_app/features/tasks/presentation/widgets/task_bottom_sheet.dart';
+import 'package:to_do_list_app/features/tasks/presentation/widgets/task_list_item.dart';
 
 class TaskListScreen extends StatelessWidget {
   const TaskListScreen({super.key});

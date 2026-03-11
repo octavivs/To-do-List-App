@@ -3,8 +3,8 @@
 // ---
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:to_do_list_app/data/models/task.dart';
-import 'package:to_do_list_app/logic/providers/task_provider.dart';
+import 'package:to_do_list_app/features/tasks/data/models/task.dart';
+import 'package:to_do_list_app/features/tasks/logic/providers/task_provider.dart';
 import 'package:to_do_list_app/core/utils/color_utils.dart';
 import 'package:to_do_list_app/core/constants/app_colors.dart';
 import 'package:to_do_list_app/core/utils/formatters.dart'; // <-- 1. Import our new formatter

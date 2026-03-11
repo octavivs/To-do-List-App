@@ -2,9 +2,9 @@
 // STATE MANAGEMENT: task_provider.dart
 // ---
 import 'package:flutter/material.dart';
-import 'package:to_do_list_app/data/models/task.dart';
-import 'package:to_do_list_app/data/models/category.dart';
-import 'package:to_do_list_app/data/repositories/local_storage_repository.dart';
+import 'package:to_do_list_app/features/tasks/data/models/category.dart';
+import 'package:to_do_list_app/features/tasks/data/models/task.dart';
+import 'package:to_do_list_app/features/tasks/data/repositories/local_storage_repository.dart';
 
 class TaskProvider extends ChangeNotifier {
   final LocalStorageRepository _repository = LocalStorageRepository();

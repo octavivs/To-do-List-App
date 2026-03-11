@@ -6,9 +6,9 @@
 // a real database.
 
 // IMPORTANT: In a real project, we would import our model files here.
-import 'package:to_do_list_app/data/models/app_user.dart';
-import 'package:to_do_list_app/data/models/category.dart';
-import 'package:to_do_list_app/data/models/task.dart';
+import 'package:to_do_list_app/features/tasks/data/models/app_user.dart';
+import 'package:to_do_list_app/features/tasks/data/models/category.dart';
+import 'package:to_do_list_app/features/tasks/data/models/task.dart';
 
 class MockData {
   // 1. INSTANTIATING A USER
