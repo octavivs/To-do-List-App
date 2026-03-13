@@ -5,9 +5,12 @@
 
 ---
 
-## User Stories: Identity & Cloud Infrastructure
+## Epics & User Stories
 
-### User Story #1: User Authentication (Sign Up, Log In & Log Out)
+### Epic 1: Identity & Cloud Infrastructure
+> *Focuses on securing user access, maintaining sessions, and establishing the robust cloud database connection required for offline-first capabilities.*
+
+#### User Story #1: User Authentication (Sign Up, Log In & Log Out)
 **Description:**
 *As a* user,
 *I want to* securely create an account, log in, and log out of the application,
@@ -39,9 +42,7 @@
   * **When** they tap the "Logout" icon in the application's top app bar,
   * **Then** their Firebase session must be terminated, clearing local memory, and they must be immediately redirected back to the AuthScreen.
 
----
-
-### User Story #2: Cloud Data Synchronization (Firestore)
+#### User Story #2: Cloud Data Synchronization (Firestore)
 **Description:**
 *As a* user,
 *I want* my tasks and categories to be automatically saved to a secure cloud database,
@@ -61,9 +62,7 @@
   * **When** the main screen loads,
   * **Then** the system must query Firestore using a composite index (filtering by `appUserId` and ordering by `createdAt`) and display all their historical tasks.
 
----
-
-### User Story #3: Offline-First Reliability (Full CRUD)
+#### User Story #3: Offline-First Reliability (Full CRUD)
 **Description:**
 *As a* user,
 *I want to* manage my tasks normally even when I don't have internet access,
@@ -81,7 +80,10 @@
 
 ---
 
-### User Story #4: Create a New Task
+### Epic 2: Task Management & UI
+> *Focuses on the core functionalities that allow the user to interact with their tasks, providing a smooth, intuitive, and responsive interface.*
+
+#### User Story #4: Create a New Task
 **Description:**
 *As a* user,
 *I want to* add a new task to my list,
@@ -101,9 +103,7 @@
   * **When** the user attempts to tap "Save",
   * **Then** the action must be prevented, and a `fixed` SnackBar warning must indicate that the title cannot be empty.
 
----
-
-### User Story #5: Mark a Task as Completed
+#### User Story #5: Mark a Task as Completed
 **Description:**
 *As a* user,
 *I want to* mark a task as completed,
@@ -119,9 +119,7 @@
   * **When** it is displayed on the screen,
   * **Then** it must have a clear visual indicator (a strikethrough text style and greyed out tone) to differentiate it from pending tasks.
 
----
-
-### User Story #6: Delete an Existing Task
+#### User Story #6: Delete an Existing Task
 **Description:**
 *As a* user,
 *I want to* delete a task from my list,
@@ -141,9 +139,7 @@
   * **When** the user taps "Undo",
   * **Then** the system must re-insert the exact same Task object back into Firestore, causing the Stream to seamlessly render it back in the list.
 
----
-
-### User Story #7: Edit an Existing Task
+#### User Story #7: Edit an Existing Task
 **Description:**
 *As a* user,
 *I want to* modify the text or category of a task I already created,
@@ -159,9 +155,7 @@
   * **When** they tap "Update Task",
   * **Then** the specific document in Firestore must be updated, and the Stream will refresh the UI to reflect the new data.
 
----
-
-### User Story #8: Filter Tasks by Status & Category
+#### User Story #8: Filter Tasks by Status & Category
 **Description:**
 *As a* user,
 *I want to* filter my tasks locally to see all, only pending, or only completed tasks, and combine this with category filters,
@@ -179,12 +173,14 @@
 
 ---
 
-### Future Backlog (Out of Current Scope)
+## Future Backlog (Out of Current Scope)
 > *The following items represent future iterations, scaling opportunities, and technical debt that will be addressed in upcoming sprints.*
 
 **Feature Enhancements:**
 * **Local Notifications & Reminders:** Implement local push notifications (via `flutter_local_notifications`) to alert the user about upcoming deadlines.
 * **User Profile Module:** Create a new Feature module (`features/profile`) allowing users to view their authenticated email, change their password, and potentially upload a profile picture.
+* **Dynamic Category Management (CRUD):** Migrate the currently static categories into a user-specific Firestore collection, allowing users to create, edit, delete, and color-code their own custom tags.
+  * **UI Scalability Redesign:** Replace the horizontal filter chips on the main screen with a scalable filtering solution (e.g., a "Filter" action button opening a Modal Bottom Sheet) to accommodate an unlimited number of custom categories without cluttering the UI.
 
 **Technical Debt & Refactoring:**
 * **UI Componentization:** Break down large presentation files (like `task_bottom_sheet.dart`) into smaller, modular, and single-responsibility functional widgets to ensure maximum readability and UI reusability.
